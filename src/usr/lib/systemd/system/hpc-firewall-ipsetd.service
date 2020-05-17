@@ -1,0 +1,11 @@
+[Unit]
+Description=HPC firewall ipsetd
+
+[Service]
+Restart=always
+RestartSec=5s
+EnvironmentFile=-/etc/sysconfig/hpc-firewall-ipsetd
+ExecStart=/usr/bin/hpc-firewall-ipsetd $OPTIONS
+
+[Install]
+WantedBy=multi-user.target
