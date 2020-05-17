@@ -32,7 +32,7 @@ func main() {
 	rootCmd.Flags().StringVar(&config.ConsulURL, "consul-addr", "", "Consul address")
 	rootCmd.Flags().StringVar(&config.ConsulToken, "consul-token", "", "Consul token")
 	rootCmd.Flags().StringVarP(&config.ConsulPath, "consul-path", "p", os.Getenv("CONSUL_PATH"), "Consul path")
-	rootCmd.Flags().StringVarP(&config.Ipset, "ipset", "s", os.Getenv("IPSET"), "Name of ipset to update")
+	rootCmd.Flags().StringVarP(&config.Ipset, "ipset", "s", "hpcuafw", "Name of ipset to update")
 
 	if err := rootCmd.Execute(); err != nil {
 		log.Fatal(err)

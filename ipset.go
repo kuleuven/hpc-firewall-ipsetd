@@ -22,7 +22,7 @@ type Ipset struct {
 
 // NewIpset prepares a new ipset
 func (u *IpsetUpdater) NewIpset(ipset string, settype string, family string, timeout uint) (*Ipset, error) {
-	cmd := fmt.Sprintf("create %s-__NEW__ %s family %s timeout %d\n", ipset, settype, family, timeout)
+	cmd := fmt.Sprintf("create %s %s family %s timeout %d\n", ipset, settype, family, timeout)
 
 	if err := u.ipsetCmd(cmd); err != nil {
 		return nil, err
