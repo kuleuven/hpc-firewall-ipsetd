@@ -73,15 +73,11 @@ func KVPairToIpsetEntries(kp *consul.KVPair) ([]IpsetEntry, []IpsetEntry, error)
 				comment: kp.Key,
 			}
 
-			log.Printf("Found entry: %s", dataEntry.IP)
-
 			if addr.To4() != nil {
 				entries4 = append(entries4, ipsetEntry)
 			} else {
 				entries6 = append(entries6, ipsetEntry)
 			}
-		} else {
-			log.Printf("Outdated entry: %s", dataEntry.IP)
 		}
 	}
 

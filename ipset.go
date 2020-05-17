@@ -42,9 +42,9 @@ func (i *Ipset) Add(entry IpsetEntry) error {
 	var cmd string
 
 	if entry.timeout != 0 {
-		cmd = fmt.Sprintf("add -exist %s %s timeout %d comment '%s'\n", i.ipset, entry.addr, entry.timeout, entry.comment)
+		cmd = fmt.Sprintf("add -exist %s %s timeout %d\n", i.ipset, entry.addr, entry.timeout)
 	} else {
-		cmd = fmt.Sprintf("add -exist %s %s comment '%s'\n", i.ipset, entry.addr, entry.comment)
+		cmd = fmt.Sprintf("add -exist %s %s\n", i.ipset, entry.addr)
 	}
 
 	return i.u.ipsetCmd(cmd)
