@@ -38,7 +38,7 @@ func (u *IpsetUpdater) NewIpset(ipset string, settype string, family string, tim
 }
 
 // Add a new ipset entry
-func (i *Ipset) Add(entry *IpsetEntry) error {
+func (i *Ipset) Add(entry IpsetEntry) error {
 	var cmd string
 
 	if entry.timeout != 0 {
@@ -51,7 +51,7 @@ func (i *Ipset) Add(entry *IpsetEntry) error {
 }
 
 // AddMultiple adds multiple times
-func (i *Ipset) AddMultiple(entries []*IpsetEntry) error {
+func (i *Ipset) AddMultiple(entries []IpsetEntry) error {
 	for _, entry := range entries {
 		if err := i.Add(entry); err != nil {
 			return err

@@ -77,8 +77,8 @@ func (u *IpsetUpdater) Run() error {
 	var (
 		index    uint64
 		pairs    []*consul.KVPair
-		entries4 []*IpsetEntry
-		entries6 []*IpsetEntry
+		entries4 []IpsetEntry
+		entries6 []IpsetEntry
 		err      error
 	)
 
@@ -101,7 +101,7 @@ func (u *IpsetUpdater) Run() error {
 				return err
 			}
 
-			err = u.Ipset4.AddMultiple(entries6)
+			err = u.Ipset6.AddMultiple(entries6)
 			if err != nil {
 				return err
 			}

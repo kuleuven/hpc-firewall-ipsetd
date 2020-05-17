@@ -38,12 +38,12 @@ type KVIpsetRecord struct {
 }
 
 // KVPairToIpsetEntries parses consul kv pairs for json ipset entries.
-func KVPairToIpsetEntries(kp *consul.KVPair) ([]*IpsetEntry, []*IpsetEntry, error) {
+func KVPairToIpsetEntries(kp *consul.KVPair) ([]IpsetEntry, []IpsetEntry, error) {
 	var (
-		entries4 = []*IpsetEntry{}
-		entries6 = []*IpsetEntry{}
+		entries4 = []IpsetEntry{}
+		entries6 = []IpsetEntry{}
 		now      = time.Now()
-		data     []*KVIpsetRecord
+		data     []KVIpsetRecord
 	)
 
 	err := json.Unmarshal(kp.Value, &data)
@@ -67,17 +67,21 @@ func KVPairToIpsetEntries(kp *consul.KVPair) ([]*IpsetEntry, []*IpsetEntry, erro
 				return nil, nil, fmt.Errorf("invalid address %s", dataEntry.IP)
 			}
 
-			ipsetEntry := &IpsetEntry{
+			ipsetEntry := IpsetEntry{
 				addr:    addr.String(),
 				timeout: timeout,
 				comment: kp.Key,
 			}
+
+			log.Printf("Found entry: %s", dataEntry.IP)
 
 			if addr.To4() != nil {
 				entries4 = append(entries4, ipsetEntry)
 			} else {
 				entries6 = append(entries6, ipsetEntry)
 			}
+		} else {
+			log.Printf("Outdated entry: %s", dataEntry.IP)
 		}
 	}
 
