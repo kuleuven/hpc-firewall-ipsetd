@@ -52,12 +52,18 @@ func KVPairToIpsetEntries(kp *consul.KVPair) ([]IpsetEntry, []IpsetEntry, error)
 		expires := dataEntry.Expiration
 		starts := dataEntry.Since
 
-		if now.Before(expires) && now.After(starts) {
-			timeout := uint(expires.Sub(now).Seconds())
-			if timeout > ipsetMaxTimeout {
+		if (expires.IsZero() || now.Before(expires)) && (starts.IsZero() || now.After(starts)) {
+			var timeout uint
+
+			if expires.IsZero() {
 				timeout = ipsetMaxTimeout
-			} else if timeout == 0 {
-				continue
+			} else {
+				timeout = uint(expires.Sub(now).Seconds())
+				if timeout > ipsetMaxTimeout {
+					timeout = ipsetMaxTimeout
+				} else if timeout == 0 {
+					continue
+				}
 			}
 
 			addr := net.ParseIP(dataEntry.IP)
