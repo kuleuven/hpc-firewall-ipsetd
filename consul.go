@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net"
 	"time"
 
@@ -24,8 +23,6 @@ func (u *IpsetUpdater) GetKVPairs(prefix string, index uint64) ([]*consul.KVPair
 	if err != nil {
 		return nil, 0, err
 	}
-
-	log.Printf("Retrieved %d pairs", len(pairs))
 
 	return pairs, meta.LastIndex, nil
 }
