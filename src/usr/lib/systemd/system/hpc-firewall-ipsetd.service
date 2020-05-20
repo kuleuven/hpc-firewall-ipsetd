@@ -1,6 +1,7 @@
 [Unit]
 Description=HPC firewall ipsetd
 PartOf=firewalld.service
+After=firewalld.service
 
 [Service]
 Restart=always
