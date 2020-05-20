@@ -1,11 +1,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/42wim/ipsetd/ipset"
 	consul "github.com/hashicorp/consul/api"
+	"golang.org/x/time/rate"
 )
 
 var (
@@ -27,6 +30,7 @@ type IpsetUpdaterConfig struct {
 // An IpsetUpdater keeps an ipset in sync with consul configuration
 type IpsetUpdater struct {
 	IpsetUpdaterConfig
+	RateLimit    *rate.Limiter
 	ConsulClient *consul.Client
 	IpsetClient  *ipset.IPset
 	Ipset4       *Ipset
@@ -54,6 +58,7 @@ func NewIpsetUpdater(config IpsetUpdaterConfig) (*IpsetUpdater, error) {
 	// Create IpsetUpdater object
 	u := &IpsetUpdater{
 		IpsetUpdaterConfig: config,
+		RateLimit:          rate.NewLimiter(rate.Every(time.Second), 100),
 		ConsulClient:       consulClient,
 		IpsetClient:        ipset.NewIPset(ipsetPath),
 	}
@@ -84,6 +89,11 @@ func (u *IpsetUpdater) Run() error {
 
 	// Main loop
 	for {
+		err = u.RateLimit.Wait(context.Background())
+		if err != nil {
+			return err
+		}
+
 		pairs, index, err = u.GetKVPairs(u.ConsulPath, index)
 		if err != nil {
 			return err
