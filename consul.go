@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"path"
 	"time"
 
 	consul "github.com/hashicorp/consul/api"
@@ -78,7 +79,7 @@ func KVPairToIpsetEntries(kp *consul.KVPair) ([]IpsetEntry, []IpsetEntry, error)
 		ipsetEntry := IpsetEntry{
 			addr:    addr.String(),
 			timeout: timeout,
-			comment: kp.Key,
+			comment: path.Base(kp.Key),
 		}
 
 		if addr.To4() != nil {
