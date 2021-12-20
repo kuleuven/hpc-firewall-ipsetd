@@ -22,10 +22,26 @@ type Ipset struct {
 
 // NewIpset prepares a new ipset
 func (u *IpsetUpdater) NewIpset(ipset string, settype string, family string, timeout uint) (*Ipset, error) {
-	cmd := fmt.Sprintf("create %s %s family %s timeout %d\n", ipset, settype, family, timeout)
+	cmd := fmt.Sprintf("create %s %s family %s timeout %d comment\n", ipset, settype, family, timeout)
 
 	if err := u.ipsetCmd(cmd); err != nil {
-		return nil, err
+		cmd = fmt.Sprintf("destroy %s-__new__", ipset)
+
+		u.ipsetCmd(cmd) // nolint:errcheck
+
+		cmd = fmt.Sprintf("create %s-__new__ %s family %s timeout %d comment\n", ipset, settype, family, timeout)
+
+		err = u.ipsetCmd(cmd)
+		if err != nil {
+			return nil, err
+		}
+
+		cmd = fmt.Sprintf("swap %s %s-__new\n", ipset, ipset)
+
+		err = u.ipsetCmd(cmd)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &Ipset{
@@ -42,9 +58,9 @@ func (i *Ipset) Add(entry IpsetEntry) error {
 	var cmd string
 
 	if entry.timeout != 0 {
-		cmd = fmt.Sprintf("add -exist %s %s timeout %d\n", i.ipset, entry.addr, entry.timeout)
+		cmd = fmt.Sprintf("add -exist %s %s timeout %d comment \"%s\"\n", i.ipset, entry.addr, entry.timeout, entry.comment)
 	} else {
-		cmd = fmt.Sprintf("add -exist %s %s\n", i.ipset, entry.addr)
+		cmd = fmt.Sprintf("add -exist %s %s comment \"%s\"\n", i.ipset, entry.addr, entry.comment)
 	}
 
 	return i.u.ipsetCmd(cmd)

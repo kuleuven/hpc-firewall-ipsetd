@@ -8,9 +8,9 @@ import (
 )
 
 func main() {
-	var config = IpsetUpdaterConfig{}
+	config := IpsetUpdaterConfig{}
 
-	var rootCmd = &cobra.Command{
+	rootCmd := &cobra.Command{
 		Use:   "hpc-firewall-ipsetd",
 		Short: "HPC firewall ipsetd keeps an ipset up to date",
 		Long:  `HPC firewall ipsetd keeps an ipset in sync with configuration in consul.`,

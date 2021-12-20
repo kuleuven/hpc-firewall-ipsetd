@@ -122,15 +122,14 @@ func (u *IpsetUpdater) Run() error {
 // Run ipset command wrapper
 func (u *IpsetUpdater) ipsetCmd(cmd string) error {
 	_, err := u.IpsetClient.Cmd(cmd)
-
-	if err != nil {
-		log.Printf("error %s occurred during %s, restarting ipset client", err, cmd)
-
-		// Recover by starting new ipset process
-		u.IpsetClient = ipset.NewIPset(ipsetPath)
-
-		return err
+	if err == nil {
+		return nil
 	}
 
-	return nil
+	log.Printf("error %s occurred during %s, restarting ipset client", err, cmd)
+
+	// Recover by starting new ipset process
+	u.IpsetClient = ipset.NewIPset(ipsetPath)
+
+	return err
 }

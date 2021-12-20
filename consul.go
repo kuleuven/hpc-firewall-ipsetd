@@ -52,37 +52,39 @@ func KVPairToIpsetEntries(kp *consul.KVPair) ([]IpsetEntry, []IpsetEntry, error)
 		expires := dataEntry.Expiration
 		starts := dataEntry.Since
 
-		if (expires.IsZero() || now.Before(expires)) && (starts.IsZero() || now.After(starts)) {
-			var timeout uint
+		if (!expires.IsZero() && now.After(expires)) || (!starts.IsZero() && now.Before(starts)) {
+			continue
+		}
 
-			if expires.IsZero() {
+		var timeout uint
+
+		if expires.IsZero() {
+			timeout = ipsetMaxTimeout
+		} else {
+			timeout = uint(expires.Sub(now).Seconds())
+			if timeout > ipsetMaxTimeout {
 				timeout = ipsetMaxTimeout
-			} else {
-				timeout = uint(expires.Sub(now).Seconds())
-				if timeout > ipsetMaxTimeout {
-					timeout = ipsetMaxTimeout
-				} else if timeout == 0 {
-					continue
-				}
+			} else if timeout == 0 {
+				continue
 			}
+		}
 
-			addr := net.ParseIP(dataEntry.IP)
+		addr := net.ParseIP(dataEntry.IP)
 
-			if addr == nil {
-				return nil, nil, fmt.Errorf("invalid address %s", dataEntry.IP)
-			}
+		if addr == nil {
+			return nil, nil, fmt.Errorf("invalid address %s", dataEntry.IP)
+		}
 
-			ipsetEntry := IpsetEntry{
-				addr:    addr.String(),
-				timeout: timeout,
-				comment: kp.Key,
-			}
+		ipsetEntry := IpsetEntry{
+			addr:    addr.String(),
+			timeout: timeout,
+			comment: kp.Key,
+		}
 
-			if addr.To4() != nil {
-				entries4 = append(entries4, ipsetEntry)
-			} else {
-				entries6 = append(entries6, ipsetEntry)
-			}
+		if addr.To4() != nil {
+			entries4 = append(entries4, ipsetEntry)
+		} else {
+			entries6 = append(entries6, ipsetEntry)
 		}
 	}
 
