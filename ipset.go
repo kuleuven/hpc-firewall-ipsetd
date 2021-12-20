@@ -21,27 +21,31 @@ type Ipset struct {
 }
 
 // NewIpset prepares a new ipset
+// Important note: ipsetCmd will not return an error if an ipset command fails.
 func (u *IpsetUpdater) NewIpset(ipset string, settype string, family string, timeout uint) (*Ipset, error) {
-	cmd := fmt.Sprintf("create %s %s family %s timeout %d comment\n", ipset, settype, family, timeout)
+	// Try to create directly. This will probably fail silently as there is already some ipset present.
+	if err := u.ipsetCmd(fmt.Sprintf("create %s %s family %s timeout %d comment\n", ipset, settype, family, timeout)); err != nil {
+		return nil, err
+	}
 
-	if err := u.ipsetCmd(cmd); err != nil {
-		cmd = fmt.Sprintf("destroy %s-__new__", ipset)
+	// Destroy ipset-__new__. IpsetCmd will not complain if this fails - that is fine.
+	if err := u.ipsetCmd(fmt.Sprintf("destroy %s-__new__\n", ipset)); err != nil {
+		return nil, err
+	}
 
-		u.ipsetCmd(cmd) // nolint:errcheck
+	// Create ipset to to swap.
+	if err := u.ipsetCmd(fmt.Sprintf("create %s-__new__ %s family %s timeout %d comment\n", ipset, settype, family, timeout)); err != nil {
+		return nil, err
+	}
 
-		cmd = fmt.Sprintf("create %s-__new__ %s family %s timeout %d comment\n", ipset, settype, family, timeout)
+	// Swap the ipsets.
+	if err := u.ipsetCmd(fmt.Sprintf("swap %s %s-__new__\n", ipset, ipset)); err != nil {
+		return nil, err
+	}
 
-		err = u.ipsetCmd(cmd)
-		if err != nil {
-			return nil, err
-		}
-
-		cmd = fmt.Sprintf("swap %s %s-__new\n", ipset, ipset)
-
-		err = u.ipsetCmd(cmd)
-		if err != nil {
-			return nil, err
-		}
+	// Destroy ipset-__new__.
+	if err := u.ipsetCmd(fmt.Sprintf("destroy %s-__new__\n", ipset)); err != nil {
+		return nil, err
 	}
 
 	return &Ipset{
